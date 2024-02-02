@@ -1,0 +1,8 @@
+{
+  "*.{js,ts,vue}": [
+    "eslint --fix --quiet"
+  ],
+  "*.{scss,vue}": [
+    "prettier --fix"
+  ]
+}
