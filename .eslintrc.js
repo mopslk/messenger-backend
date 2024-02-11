@@ -7,7 +7,8 @@ module.exports = {
   },
   plugins: ['@typescript-eslint/eslint-plugin'],
   extends: [
-    'plugin:@typescript-eslint/recommended',
+    'airbnb-base',
+    'airbnb-typescript/base'
   ],
   root: true,
   env: {
@@ -39,5 +40,11 @@ module.exports = {
     'no-spaced-func': 'off',
     'no-unused-vars': 'off',
     'linebreak-style': ['error', 'unix'],
+    'import/prefer-default-export': 'off',
+    'import/extensions': 'off',
+    'no-multi-spaces': 'off',
+    'indent': ['error', 2, { 'SwitchCase': 1, 'ignoredNodes': ['PropertyDefinition'] }],
+    '@typescript-eslint/indent': 'off',
+    'import/no-extraneous-dependencies' : 'off',
   },
 };
