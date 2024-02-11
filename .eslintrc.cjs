@@ -15,7 +15,6 @@ module.exports = {
     node: true,
     jest: true,
   },
-  ignorePatterns: ['.eslintrc.js'],
   rules: {
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
@@ -42,7 +41,7 @@ module.exports = {
     'linebreak-style': ['error', 'unix'],
     'import/prefer-default-export': 'off',
     'import/extensions': 'off',
-    'no-multi-spaces': 'off',
+    'no-multi-spaces': ['error', { exceptions: { 'Program': true } }],
     'indent': ['error', 2, { 'SwitchCase': 1, 'ignoredNodes': ['PropertyDefinition'] }],
     '@typescript-eslint/indent': 'off',
     'import/no-extraneous-dependencies' : 'off',
