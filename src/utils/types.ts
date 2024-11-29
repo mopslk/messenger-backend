@@ -10,7 +10,7 @@ export type ErrorType = {
 
 export interface SuccessResponseType<T> {
   data: T;
-  error: boolean;
+  success: boolean;
 }
 
 export type TokensResponseType = {

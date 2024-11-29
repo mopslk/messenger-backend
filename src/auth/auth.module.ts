@@ -8,7 +8,9 @@ import { AuthController } from '@/auth/controllers/auth.controller';
 @Module({
   imports: [
     PassportModule,
-    JwtModule.register({}),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET_KEY,
+    }),
     forwardRef(() => UsersModule),
   ],
   controllers : [AuthController],

@@ -24,7 +24,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       data: {
         error: (exception as ErrorType)?.response?.message,
       },
-      error: true,
+      success: false,
     };
 
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);

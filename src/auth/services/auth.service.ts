@@ -8,7 +8,8 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from '@/users/services/user.service';
 import { User } from '@/users/entity/user';
 import type { IAuthService } from '@/auth/interfaces/services';
-import { hash, hashCompare } from '@/utils/helpers/hash';
+import { hashCompare } from '@/utils/helpers/hash';
+import { getTokenSignature } from '@/utils/helpers/token';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -30,17 +31,16 @@ export class AuthService implements IAuthService {
 
   async generateTokens(userId: number) {
     const payload = { sub: userId };
-    const accessToken = this.jwtService.sign(payload, {
+
+    const accessToken = await this.jwtService.signAsync(payload, {
       secret    : process.env.JWT_SECRET_KEY,
-      expiresIn : '1h',
+      expiresIn : '30m',
     });
 
-    const refreshToken = await hash(
-      this.jwtService.sign(payload, {
-        secret    : process.env.JWT_REFRESH_SECRET_KEY,
-        expiresIn : '7d',
-      }),
-    );
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      secret    : process.env.JWT_REFRESH_SECRET_KEY,
+      expiresIn : '7d',
+    });
 
     return {
       accessToken,
@@ -49,9 +49,15 @@ export class AuthService implements IAuthService {
   }
 
   async refresh(refreshToken: string) {
-    const user = await this.userService.findBy('refresh_token', refreshToken);
+    const userDataFromToken = await this.jwtService.verifyAsync(refreshToken, {
+      secret: process.env.JWT_REFRESH_SECRET_KEY,
+    });
 
-    if (!user) {
+    const user = await this.userService.findBy('id', userDataFromToken.sub);
+
+    const compareHashTokens = await hashCompare(getTokenSignature(refreshToken), user.refresh_token);
+
+    if (!user || !compareHashTokens) {
       throw new BadRequestException('Invalid refresh token');
     }
 

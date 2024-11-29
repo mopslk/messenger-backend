@@ -4,8 +4,8 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
-import { ExtractJwt } from 'passport-jwt';
 import { Reflector } from '@nestjs/core';
 import { UserService } from '@/users/services/user.service';
 
@@ -24,19 +24,26 @@ export class AuthGuard implements CanActivate {
     }
 
     const request = ctx.switchToHttp().getRequest();
-    const getTokenFunc = ExtractJwt.fromAuthHeaderAsBearerToken();
-    const token = getTokenFunc(request);
+    const token = this.extractTokenFromHeader(request);
+
     if (!token) {
       throw new UnauthorizedException();
     }
 
     try {
-      const decodedUser = this.jwtService.decode(token);
+      const decodedUser = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+      });
       request.user = this.userService.findBy('id', decodedUser.sub);
     } catch {
       throw new UnauthorizedException();
     }
 
     return true;
+  }
+
+  private extractTokenFromHeader(request: Request): string | undefined {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    return type === 'Bearer' ? token : undefined;
   }
 }

@@ -7,6 +7,7 @@ import { User } from '@/users/entity/user';
 import { UserRegisterDto } from '@/users/dto/user-register.dto';
 import { AuthService } from '@/auth/services/auth.service';
 import { hash } from '@/utils/helpers/hash';
+import { getTokenSignature } from '@/utils/helpers/token';
 
 @Injectable()
 export class UserService implements IUserService {
@@ -22,9 +23,11 @@ export class UserService implements IUserService {
   }
 
   async updateUserRefreshToken(user: User, refreshToken: string): Promise<void> {
+    const hashedRefreshToken = await hash(getTokenSignature(refreshToken));
+
     const updatedUser = {
       ...user,
-      refresh_token: refreshToken,
+      refresh_token: hashedRefreshToken,
     };
     await this.userRepository.save(updatedUser);
   }

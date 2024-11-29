@@ -10,11 +10,11 @@ import type { SuccessResponseType } from '@/utils/types';
 
 @Injectable()
 export class TransformInterceptor<T> implements NestInterceptor<T, SuccessResponseType<T>> {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<SuccessResponseType<T>> {
+  intercept(_context: ExecutionContext, next: CallHandler): Observable<SuccessResponseType<T>> {
     return next.handle().pipe(
       map((data) => ({
         data,
-        error: false,
+        success: true,
       })),
     );
   }
