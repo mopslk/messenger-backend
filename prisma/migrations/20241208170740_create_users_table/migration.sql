@@ -1,10 +1,11 @@
-CREATE SEQUENCE global_bigint_seq
+CREATE SEQUENCE uqid
     START WITH 1000000000
-    INCREMENT BY 1;
+    INCREMENT BY 1
+    OWNED BY NONE;
 
 -- CreateTable
 CREATE TABLE "users" (
-    "id" BIGINT NOT NULL DEFAULT nextval('global_bigint_seq'),
+    "id" BIGINT NOT NULL DEFAULT nextval('uqid'::regclass),
     "login" VARCHAR NOT NULL,
     "name" VARCHAR NOT NULL,
     "password" VARCHAR NOT NULL,
