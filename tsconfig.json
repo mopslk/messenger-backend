@@ -21,6 +21,17 @@
       "@/*": [
         "./src/*"
       ]
-    }
-  }
+    },
+    "types": [
+      "node",
+    ]
+  },
+  "include": [
+    "**/*",
+    ".eslintrc.cjs",
+  ],
+  "exclude": [
+    ".husky",
+    "node_modules",
+  ]
 }

@@ -1,14 +1,11 @@
 import {
-  BadRequestException,
-  Body,
-  Controller,
-  Post,
+  BadRequestException, Body, Controller, Post,
 } from '@nestjs/common';
-import type { AuthResponseType } from "@/utils/types";
+import type { AuthResponseType } from '@/utils/types';
 import { AuthService } from '@/auth/services/auth.service';
 import { Public } from '@/utils/decorators/public.decorator';
 import { RefreshDto } from '@/auth/dto/refresh.dto';
-import { UserRegisterDto } from "@/users/dto/user-register.dto";
+import { UserRegisterDto } from '@/users/dto/user-register.dto';
 import { UserLoginDto } from '@/auth/dto/user-login.dto';
 
 @Controller('auth')

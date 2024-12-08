@@ -1,7 +1,8 @@
+// eslint-disable-next-line import/no-cycle
+import { UsersModule } from '@/users/users.module';
 import { forwardRef, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from '@/auth/services/auth.service';
-import { UsersModule } from '@/users/users.module';
 import { AuthController } from '@/auth/controllers/auth.controller';
 
 @Module({
