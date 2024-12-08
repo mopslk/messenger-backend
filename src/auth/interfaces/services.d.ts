@@ -1,12 +1,16 @@
-import { User } from '@/users/entity/user';
+import type { User } from "@prisma/client";
 import type { AuthResponseType, TokensResponseType } from '@/utils/types';
+import { UserRegisterDto } from "@/users/dto/user-register.dto";
+import { UserLoginDto } from "@/auth/dto/user-login.dto";
 
 export interface IAuthService {
-  validateUser(login: string, password: string): Promise<User | null>;
+  validateUser(userLoginDto: UserLoginDto): Promise<User | null>;
 
-  generateTokens(userId: number): Promise<TokensResponseType>;
+  generateTokens(userId: bigint): Promise<TokensResponseType>;
 
   refresh(refreshToken: string): Promise<TokensResponseType>;
 
   login(user: User): Promise<AuthResponseType>;
+
+  register(credentials: UserRegisterDto): Promise<AuthResponseType>;
 }

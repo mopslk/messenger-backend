@@ -6,27 +6,32 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { DataSource, EntityTarget } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
+import { Prisma } from "@prisma/client";
+import { PrismaService } from "@/prisma/prisma.service";
+
+type PrismaModelNames = Prisma.ModelName;
 
 @ValidatorConstraint({ name: 'uniqueConstraint', async: true })
 @Injectable()
 export class UniqueConstraint implements ValidatorConstraintInterface {
   constructor(
-        @InjectDataSource()
-        private dataSource: DataSource,
+      private prisma: PrismaService,
   ) {}
 
   async validate(value: any, args: ValidationArguments) {
-    const repository = this.dataSource.getRepository(args.constraints[0]);
-    const row = await repository.findOneBy({
-      [args.property]: value,
-    });
+    const [entity] = args.constraints as [PrismaModelNames];
+    const model = this.prisma[entity.toLowerCase()];
+
+    const row = await model.findUnique({
+      where: {
+        [args.property]: value,
+      },
+    })
     return row === null;
   }
 }
 
-export function Unique(entity: EntityTarget<any>, validationOptions?: ValidationOptions) {
+export function Unique(entity: PrismaModelNames, validationOptions?: ValidationOptions) {
   return (object: any, propertyName: string) => {
     registerDecorator({
       target  : object.constructor,

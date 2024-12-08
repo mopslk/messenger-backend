@@ -1,4 +1,5 @@
-import { User } from '@/users/entity/user';
+import type { User } from "@prisma/client";
+import {UserResponseDto} from "@/users/dto/user.response.dto";
 
 export type ErrorType = {
   response: {
@@ -19,6 +20,6 @@ export type TokensResponseType = {
 };
 
 export type AuthResponseType = {
-  user: Omit<User, 'password' | 'refresh_token'>;
+  user: UserResponseDto;
   tokens: TokensResponseType;
 };
