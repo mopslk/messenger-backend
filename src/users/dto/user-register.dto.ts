@@ -6,26 +6,26 @@ export class UserRegisterDto {
   @IsNotEmpty()
   @IsString()
   @Unique('User')
-  login: string;
+    login: string;
 
   @IsString()
   @IsNotEmpty()
-  name: string;
+    name: string;
 
   @IsNotEmpty()
   @IsString()
-  password: string;
+    password: string;
 
   @Match('password')
-  passwordConfirmation: string;
+    passwordConfirmation: string;
 
   @IsString()
   @IsOptional()
-  bio: string | null;
+    bio: string | null;
 
   @IsString()
   @IsOptional()
-  avatar: string | null;
+    avatar: string | null;
 
   setPassword(value: string): void {
     this.password = value;

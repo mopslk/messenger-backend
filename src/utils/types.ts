@@ -1,5 +1,4 @@
-import type { User } from "@prisma/client";
-import {UserResponseDto} from "@/users/dto/user.response.dto";
+import { UserResponseDto } from '@/users/dto/user.response.dto';
 
 export type ErrorType = {
   response: {

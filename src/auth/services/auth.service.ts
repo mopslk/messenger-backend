@@ -5,16 +5,16 @@ import {
   Injectable, InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import type { User } from "@prisma/client";
-import { plainToInstance } from "class-transformer";
+import type { User } from '@prisma/client';
+import { plainToInstance } from 'class-transformer';
 import { UserService } from '@/users/services/user.service';
 import type { IAuthService } from '@/auth/interfaces/services';
 import { hashCompare } from '@/utils/helpers/hash';
 import { getTokenSignature } from '@/utils/helpers/token';
-import {UserRegisterDto} from "@/users/dto/user-register.dto";
-import type {AuthResponseType} from "@/utils/types";
-import { UserResponseDto } from "@/users/dto/user.response.dto";
-import { UserLoginDto } from "@/auth/dto/user-login.dto";
+import { UserRegisterDto } from '@/users/dto/user-register.dto';
+import type { AuthResponseType } from '@/utils/types';
+import { UserResponseDto } from '@/users/dto/user.response.dto';
+import { UserLoginDto } from '@/auth/dto/user-login.dto';
 
 @Injectable()
 export class AuthService implements IAuthService {

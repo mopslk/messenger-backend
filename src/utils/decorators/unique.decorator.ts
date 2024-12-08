@@ -6,8 +6,8 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Injectable } from '@nestjs/common';
-import { Prisma } from "@prisma/client";
-import { PrismaService } from "@/prisma/prisma.service";
+import { Prisma } from '@prisma/client';
+import { PrismaService } from '@/prisma/prisma.service';
 
 type PrismaModelNames = Prisma.ModelName;
 
@@ -15,7 +15,7 @@ type PrismaModelNames = Prisma.ModelName;
 @Injectable()
 export class UniqueConstraint implements ValidatorConstraintInterface {
   constructor(
-      private prisma: PrismaService,
+    private prisma: PrismaService,
   ) {}
 
   async validate(value: any, args: ValidationArguments) {
@@ -26,7 +26,7 @@ export class UniqueConstraint implements ValidatorConstraintInterface {
       where: {
         [args.property]: value,
       },
-    })
+    });
     return row === null;
   }
 }
