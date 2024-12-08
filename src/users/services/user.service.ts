@@ -1,55 +1,47 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import type { User } from '@prisma/client';
 import type { IUserService } from '@/users/interfaces/services';
-import type { AuthResponseType } from '@/utils/types';
-import { User } from '@/users/entity/user';
-import { UserRegisterDto } from '@/users/dto/user-register.dto';
-import { AuthService } from '@/auth/services/auth.service';
 import { hash } from '@/utils/helpers/hash';
 import { getTokenSignature } from '@/utils/helpers/token';
+import { PrismaService } from "@/prisma/prisma.service";
+import { UserRegisterDto } from "@/users/dto/user-register.dto";
 
 @Injectable()
 export class UserService implements IUserService {
   constructor(
-    @InjectRepository(User) private userRepository: Repository<User>,
-    private authService: AuthService,
+      @Inject(forwardRef(() => PrismaService))
+      private prisma: PrismaService,
   ) {}
 
-  async findBy(property: string, value: unknown): Promise<User> {
-    return this.userRepository.findOneBy({
-      [property]: value,
+  async findBy(property: keyof User, value: unknown): Promise<User> {
+    return this.prisma.user.findFirst({
+      where: {
+        [property]: value,
+      },
     });
   }
 
   async updateUserRefreshToken(user: User, refreshToken: string): Promise<void> {
     const hashedRefreshToken = await hash(getTokenSignature(refreshToken));
 
-    const updatedUser = {
-      ...user,
-      refresh_token: hashedRefreshToken,
-    };
-    await this.userRepository.save(updatedUser);
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        refresh_token: hashedRefreshToken,
+      },
+    });
   }
 
-  async register(credentials: UserRegisterDto): Promise<AuthResponseType> {
-    try {
-      const hashedPassword = await hash(credentials.password);
+  async createUser(data: UserRegisterDto): Promise<User> {
+    const hashedPassword = await hash(data.password);
 
-      const user = this.userRepository.create({
-        ...credentials,
-        password: hashedPassword,
-      });
+    data.setPassword(hashedPassword);
+    data.removePasswordConfirmationField();
 
-      const tokens = await this.authService.generateTokens(user.id);
-      await this.updateUserRefreshToken(user, tokens.refreshToken);
-
-      return {
-        user,
-        tokens,
-      };
-    } catch (e) {
-      throw new InternalServerErrorException(e);
-    }
+    return this.prisma.user.create({
+      data,
+    });
   }
 }

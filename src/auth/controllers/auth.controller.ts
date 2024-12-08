@@ -4,10 +4,12 @@ import {
   Controller,
   Post,
 } from '@nestjs/common';
-import { UserLoginDto } from '@/auth/dto/user-login.dto';
+import type { AuthResponseType } from "@/utils/types";
 import { AuthService } from '@/auth/services/auth.service';
 import { Public } from '@/utils/decorators/public.decorator';
 import { RefreshDto } from '@/auth/dto/refresh.dto';
+import { UserRegisterDto } from "@/users/dto/user-register.dto";
+import { UserLoginDto } from '@/auth/dto/user-login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -16,8 +18,7 @@ export class AuthController {
   @Public()
   @Post('login')
   async login(@Body() userLoginDto: UserLoginDto) {
-    const { login, password } = userLoginDto;
-    const user = await this.authService.validateUser(login, password);
+    const user = await this.authService.validateUser(userLoginDto);
 
     if (!user) {
       throw new BadRequestException('Invalid login or password!');
@@ -30,5 +31,11 @@ export class AuthController {
   @Post('refresh')
   async refresh(@Body() refreshDto: RefreshDto) {
     return this.authService.refresh(refreshDto.refreshToken);
+  }
+
+  @Post('register')
+  @Public()
+  async register(@Body() credentials: UserRegisterDto): Promise<AuthResponseType> {
+    return this.authService.register(credentials);
   }
 }

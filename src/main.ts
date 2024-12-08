@@ -16,7 +16,9 @@ async function bootstrap() {
 
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
   app.useGlobalInterceptors(new TransformInterceptor(), new ClassSerializerInterceptor(app.get(Reflector)));
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,
+  }));
 
   await app.listen(3000);
 }

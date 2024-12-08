@@ -1,12 +1,11 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Match } from '@/utils/decorators/match.decorator';
 import { Unique } from '@/utils/decorators/unique.decorator';
-import { User } from '@/users/entity/user';
 
 export class UserRegisterDto {
   @IsNotEmpty()
   @IsString()
-  @Unique(User)
+  @Unique('User')
   login: string;
 
   @IsString()
@@ -17,8 +16,6 @@ export class UserRegisterDto {
   @IsString()
   password: string;
 
-  @IsNotEmpty()
-  @IsString()
   @Match('password')
   passwordConfirmation: string;
 
@@ -29,4 +26,12 @@ export class UserRegisterDto {
   @IsString()
   @IsOptional()
   avatar: string | null;
+
+  setPassword(value: string): void {
+    this.password = value;
+  }
+
+  removePasswordConfirmationField(): void {
+    delete this.passwordConfirmation;
+  }
 }

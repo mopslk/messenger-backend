@@ -1,17 +1,16 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_GUARD } from '@nestjs/core';
-import { dataSourceOptions } from './utils/data-source';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthGuard } from '@/auth/utils/auth.guard';
 import { UniqueConstraint } from '@/utils/decorators/unique.decorator';
+import {PrismaModule} from "@/prisma/prisma.module";
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(dataSourceOptions),
     UsersModule,
     AuthModule,
+    PrismaModule,
   ],
   controllers : [],
   providers   : [
