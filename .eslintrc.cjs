@@ -46,7 +46,8 @@ module.exports = {
         caughtErrorsIgnorePattern : '^_',
       },
     ],
-    'import/prefer-default-export': 'off',
+    'import/prefer-default-export' : 'off',
+    'no-multi-spaces'              : 'off',
   },
   settings: {
     'import/resolver': {
