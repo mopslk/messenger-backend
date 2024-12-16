@@ -134,7 +134,7 @@ export class AuthService implements IAuthService {
     let secret = await this.cacheManager.get<string>(key);
 
     if (!secret) {
-      const newSecret = authenticator.generateSecret();
+      const newSecret = authenticator.generateSecret(32);
       await this.cacheManager.set(key, newSecret);
 
       secret = newSecret;
