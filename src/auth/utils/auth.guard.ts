@@ -1,8 +1,5 @@
 import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
+  CanActivate, ExecutionContext, Injectable, UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
@@ -35,6 +32,10 @@ export class AuthGuard implements CanActivate {
         secret: process.env.JWT_SECRET,
       });
       request.user = this.userService.findBy('id', decodedUser.sub);
+
+      if (request.user.secret && String(request.route.path).includes('2fa')) {
+        return false;
+      }
     } catch {
       throw new UnauthorizedException();
     }

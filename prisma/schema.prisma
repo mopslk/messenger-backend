@@ -16,6 +16,7 @@ model User {
   bio           String? @db.VarChar
   avatar        String? @db.VarChar
   refresh_token String? @db.VarChar
+  secret        String? @db.VarChar
 
   @@map("users")
 }

@@ -1,8 +1,5 @@
 import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable, InternalServerErrorException,
+  BadRequestException, forwardRef, Inject, Injectable, InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { User } from '@prisma/client';
@@ -15,6 +12,9 @@ import { UserRegisterDto } from '@/users/dto/user-register.dto';
 import type { AuthResponseType } from '@/utils/types';
 import { UserResponseDto } from '@/users/dto/user.response.dto';
 import { UserLoginDto } from '@/auth/dto/user-login.dto';
+import { authenticator } from 'otplib';
+import { toDataURL } from 'qrcode';
+import { CACHE_MANAGER, type CacheStore } from '@nestjs/cache-manager';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -22,6 +22,7 @@ export class AuthService implements IAuthService {
     @Inject(forwardRef(() => UserService))
     private userService: UserService,
     private jwtService: JwtService,
+    @Inject(CACHE_MANAGER) private cacheManager: CacheStore,
   ) {}
 
   async validateUser(userLoginDto: UserLoginDto) {
@@ -98,5 +99,48 @@ export class AuthService implements IAuthService {
     } catch (e) {
       throw new InternalServerErrorException(e);
     }
+  }
+
+  async verifyCodeForSetupTwoFactor(userId: bigint, token: string) {
+    const key = `2fa:${userId}`;
+    const secret = await this.cacheManager.get<string>(key);
+
+    if (!secret) {
+      throw new BadRequestException('Not found 2fa, regenerate qr-code');
+    }
+
+    const isVerifyCode = authenticator.verify({
+      token,
+      secret,
+    });
+
+    if (isVerifyCode) {
+      await this.userService.setTwoFactorAuthenticationSecret(secret, userId);
+      await this.cacheManager.del(key);
+    }
+
+    return isVerifyCode;
+  }
+
+  async verifyCode(secret: string, token: string) {
+    return authenticator.verify({
+      token,
+      secret,
+    });
+  }
+
+  async generateCode(user: User) {
+    const key = `2fa:${user.id}`;
+    let secret = await this.cacheManager.get<string>(key);
+
+    if (!secret) {
+      const newSecret = authenticator.generateSecret();
+      await this.cacheManager.set(key, newSecret);
+
+      secret = newSecret;
+    }
+    const otpAuthUrl = authenticator.keyuri('', '', secret);
+
+    return toDataURL(otpAuthUrl);
   }
 }
