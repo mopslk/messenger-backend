@@ -16,5 +16,8 @@ export class UserResponseDto {
     password: string;
 
   @Exclude()
+    secret: string;
+
+  @Exclude()
     refresh_token: string;
 }

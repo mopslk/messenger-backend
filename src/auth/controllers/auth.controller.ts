@@ -1,5 +1,5 @@
 import {
-  BadRequestException, Body, Controller, Post,
+  BadRequestException, Body, Controller, Get, Post, Query, UnauthorizedException,
 } from '@nestjs/common';
 import type { AuthResponseType } from '@/utils/types';
 import { AuthService } from '@/auth/services/auth.service';
@@ -7,10 +7,14 @@ import { Public } from '@/utils/decorators/public.decorator';
 import { RefreshDto } from '@/auth/dto/refresh.dto';
 import { UserRegisterDto } from '@/users/dto/user-register.dto';
 import { UserLoginDto } from '@/auth/dto/user-login.dto';
+import { CurrentUser } from '@/utils/decorators/current-user.decorator';
+import type { User } from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+  ) {}
 
   @Public()
   @Post('login')
@@ -19,6 +23,18 @@ export class AuthController {
 
     if (!user) {
       throw new BadRequestException('Invalid login or password!');
+    }
+
+    if (user.secret && !userLoginDto?.code) {
+      throw new UnauthorizedException('2fa');
+    }
+
+    if (user.secret && userLoginDto?.code) {
+      const check2fa = await this.authService.verifyCode(user.secret, userLoginDto.code);
+
+      if (!check2fa) {
+        throw new BadRequestException('Invalid code!');
+      }
     }
 
     return this.authService.login(user);
@@ -34,5 +50,15 @@ export class AuthController {
   @Public()
   async register(@Body() credentials: UserRegisterDto): Promise<AuthResponseType> {
     return this.authService.register(credentials);
+  }
+
+  @Get('2fa/generate-code')
+  async generateCode(@CurrentUser() user: User) {
+    return this.authService.generateCode(user);
+  }
+
+  @Get('2fa/verify-code')
+  async verifyCode(@CurrentUser() user: User, @Query('code') code: string) {
+    return this.authService.verifyCodeForSetupTwoFactor(user.id, code);
   }
 }

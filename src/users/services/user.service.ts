@@ -34,6 +34,17 @@ export class UserService implements IUserService {
     });
   }
 
+  async setTwoFactorAuthenticationSecret(secret: string, userId: bigint): Promise<void> {
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        secret,
+      },
+    });
+  }
+
   async createUser(data: UserRegisterDto): Promise<User> {
     const hashedPassword = await hash(data.password);
 

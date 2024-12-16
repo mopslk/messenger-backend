@@ -5,12 +5,15 @@ import { UniqueConstraint } from '@/utils/decorators/unique.decorator';
 import { PrismaModule } from '@/prisma/prisma.module';
 import { AuthModule } from '@/auth/auth.module';
 import { UsersModule } from '@/users/users.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisConfig } from '@/utils/helpers/storageConfigs';
 
 @Module({
   imports: [
     UsersModule,
     AuthModule,
     PrismaModule,
+    CacheModule.registerAsync(redisConfig),
   ],
   controllers : [],
   providers   : [
