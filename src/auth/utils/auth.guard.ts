@@ -33,7 +33,7 @@ export class AuthGuard implements CanActivate {
       });
       request.user = this.userService.findBy('id', decodedUser.sub);
 
-      if (request.user.secret && String(request.route.path).includes('2fa')) {
+      if (request.user.secret && String(request.route.path).includes('2fa')) { // TODO: Рефактор
         return false;
       }
     } catch {
