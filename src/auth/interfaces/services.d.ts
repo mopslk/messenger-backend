@@ -17,4 +17,6 @@ export interface IAuthService {
   verifyCode(secret: string, token: string): Promise<Boolean>;
 
   generateCode(user: User): Promise<string>;
+
+  checkingForTwoFactor(user: User, code?: string): Promise<void>
 }

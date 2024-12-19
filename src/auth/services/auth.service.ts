@@ -1,5 +1,10 @@
 import {
-  BadRequestException, forwardRef, Inject, Injectable, InternalServerErrorException,
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { User } from '@prisma/client';
@@ -142,5 +147,19 @@ export class AuthService implements IAuthService {
     const otpAuthUrl = authenticator.keyuri('', '', secret);
 
     return toDataURL(otpAuthUrl);
+  }
+
+  async checkingForTwoFactor(user: User, code?: string): Promise<void> {
+    if (user.secret && !code) {
+      throw new UnauthorizedException('2fa');
+    }
+
+    if (user.secret && code) {
+      const check2fa = await this.verifyCode(user.secret, code);
+
+      if (!check2fa) {
+        throw new BadRequestException('Invalid code!');
+      }
+    }
   }
 }
