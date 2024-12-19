@@ -20,6 +20,7 @@ import { UserLoginDto } from '@/auth/dto/user-login.dto';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
 import { CACHE_MANAGER, type CacheStore } from '@nestjs/cache-manager';
+import { daysToMs } from '@/utils/helpers/day';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -73,9 +74,17 @@ export class AuthService implements IAuthService {
     }
 
     const tokens = await this.generateTokens(user.id);
-    await this.userService.updateUserRefreshToken(user, tokens.refreshToken);
 
-    return tokens;
+    if ((Number(userDataFromToken.exp) - Date.now()) <= daysToMs(1)) {
+      await this.userService.updateUserRefreshToken(user, tokens.refreshToken);
+
+      return tokens;
+    }
+
+    return {
+      refreshToken,
+      accessToken: tokens.accessToken,
+    };
   }
 
   async login(user: User): Promise<AuthResponseType> {
