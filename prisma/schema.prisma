@@ -25,16 +25,23 @@ model User {
 
 model Chat {
   id              BigInt       @id @default(dbgenerated("nextval('uqid'::regclass)")) @db.BigInt
-  type            String       @default("private") // private | group
+  type            ChatType     @default(private)
   name            String?
-  updated_at      DateTime     @updatedAt
   last_message_id BigInt?      @unique
   last_message    Message?     @relation("LastMessage", fields: [last_message_id], references: [id]) // Уникальная связь для последнего сообщения
   members         ChatMember[]
   messages        Message[]    @relation("ChatMessages") // Уникальная связь для всех сообщений
 
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(0)
+  created_at DateTime @default(now()) @db.Timestamptz(0)
+
   @@index([last_message_id])
   @@map("chats")
+}
+
+enum ChatType {
+  private
+  group
 }
 
 model Message {
@@ -43,13 +50,15 @@ model Message {
   user_id         BigInt
   content         String
   attachments     MessageAttachments[]
-  created_at      DateTime             @default(now())
   chat            Chat                 @relation("ChatMessages", fields: [chat_id], references: [id]) // Связь для всех сообщений чата
   as_last_message Chat?                @relation("LastMessage") // Обратная связь для lastMessage
   user            User                 @relation(fields: [user_id], references: [id])
 
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(0)
+  created_at DateTime @default(now()) @db.Timestamptz(0)
+
   @@index([chat_id, user_id])
-  @@map("messeges")
+  @@map("messages")
 }
 
 model ChatMember {
