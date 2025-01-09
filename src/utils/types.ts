@@ -1,4 +1,5 @@
 import { UserResponseDto } from '@/users/dto/user.response.dto';
+import type { Role } from '@prisma/client';
 
 export type ErrorType = {
   response: {
@@ -21,4 +22,11 @@ export type TokensResponseType = {
 export type AuthResponseType = {
   user: UserResponseDto;
   tokens: TokensResponseType;
+};
+
+export type ChatMembersType = {
+  login: string,
+  name: string,
+  avatar: string | null,
+  role: Role | null,
 };
