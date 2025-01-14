@@ -9,14 +9,90 @@ datasource db {
 }
 
 model User {
-  id            BigInt  @id @default(dbgenerated("nextval('uqid'::regclass)")) @db.BigInt
-  login         String  @unique(map: "UQ_2d443082eccd5198f95f2a36e2c") @db.VarChar
-  name          String  @db.VarChar
-  password      String  @db.VarChar
-  bio           String? @db.VarChar
-  avatar        String? @db.VarChar
-  refresh_token String? @db.VarChar
-  secret        String? @db.VarChar
+  id            BigInt       @id @default(dbgenerated("nextval('uqid'::regclass)")) @db.BigInt
+  login         String       @unique(map: "UQ_2d443082eccd5198f95f2a36e2c") @db.VarChar
+  name          String       @db.VarChar
+  password      String       @db.VarChar
+  bio           String?      @db.VarChar
+  avatar        String?      @db.VarChar
+  refresh_token String?      @db.VarChar
+  secret        String?      @db.VarChar
+  Message       Message[]
+  ChatMember    ChatMember[]
 
   @@map("users")
+}
+
+model Chat {
+  id              BigInt       @id @default(dbgenerated("nextval('uqid'::regclass)")) @db.BigInt
+  type            ChatType     @default(private)
+  name            String?
+  last_message_id BigInt?      @unique
+  last_message    Message?     @relation("LastMessage", fields: [last_message_id], references: [id]) // Уникальная связь для последнего сообщения
+  members         ChatMember[]
+  messages        Message[]    @relation("ChatMessages") // Уникальная связь для всех сообщений
+
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(0)
+  created_at DateTime @default(now()) @db.Timestamptz(0)
+
+  @@index([last_message_id])
+  @@map("chats")
+}
+
+enum ChatType {
+  private
+  group
+}
+
+model Message {
+  id              BigInt               @id @default(dbgenerated("nextval('uqid'::regclass)")) @db.BigInt
+  chat_id         BigInt
+  user_id         BigInt
+  content         String
+  attachments     MessageAttachments[]
+  chat            Chat                 @relation("ChatMessages", fields: [chat_id], references: [id], onDelete: Cascade) // Связь для всех сообщений чата
+  as_last_message Chat?                @relation("LastMessage") // Обратная связь для lastMessage
+  user            User                 @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(0)
+  created_at DateTime @default(now()) @db.Timestamptz(0)
+
+  @@index([chat_id, user_id])
+  @@map("messages")
+}
+
+model ChatMember {
+  chat_id BigInt
+  user_id BigInt
+  role    Role?
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  chat    Chat?  @relation(fields: [chat_id], references: [id], onDelete: Cascade)
+
+  @@id([chat_id, user_id])
+  @@index([chat_id, user_id])
+  @@map("chat_members")
+}
+
+enum Role {
+  member
+  admin
+  owner
+}
+
+model MessageAttachments {
+  message_id BigInt
+  type       AttachmentType @default(image)
+  path       String
+  Message    Message        @relation(fields: [message_id], references: [id], onDelete: Cascade)
+
+  @@id([message_id])
+  @@index([message_id])
+  @@map("message_attachments")
+}
+
+enum AttachmentType {
+  image
+  video
+  gif
+  docs
 }

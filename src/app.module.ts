@@ -7,6 +7,7 @@ import { AuthModule } from '@/auth/auth.module';
 import { UsersModule } from '@/users/users.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisConfig } from '@/utils/helpers/storageConfigs';
+import { ChatsModule } from './chats/chats.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { redisConfig } from '@/utils/helpers/storageConfigs';
     AuthModule,
     PrismaModule,
     CacheModule.registerAsync(redisConfig),
+    ChatsModule,
   ],
   controllers : [],
   providers   : [

@@ -1,4 +1,5 @@
 import { UserResponseDto } from '@/users/dto/user.response.dto';
+import type { MessageAttachments, Role } from '@prisma/client';
 
 export type ErrorType = {
   response: {
@@ -21,4 +22,28 @@ export type TokensResponseType = {
 export type AuthResponseType = {
   user: UserResponseDto;
   tokens: TokensResponseType;
+};
+
+export type ChatMembersType = {
+  login: string,
+  name: string,
+  avatar: string | null,
+  role: Role | null,
+};
+
+export type ChatMembersCreateInput = {
+  user_id: bigint;
+  role: Role | null;
+  chat_id: bigint;
+};
+
+export type CreateMessageType = {
+  user_id: bigint;
+  chat_id: bigint;
+  content: string;
+};
+
+export type MessageCreateInput = {
+  message: CreateMessageType;
+  attachments: Omit<MessageAttachments, 'message_id'>[]
 };
