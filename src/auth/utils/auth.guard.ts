@@ -5,6 +5,7 @@ import type { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
 import { UserService } from '@/users/services/user.service';
+import type { JwtPayload } from 'jsonwebtoken';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -28,7 +29,7 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const decodedUser = await this.jwtService.verifyAsync(token, {
+      const decodedUser = await this.jwtService.verifyAsync<JwtPayload>(token, {
         secret: process.env.JWT_SECRET,
       });
       request.user = this.userService.findBy('id', decodedUser.sub);
@@ -36,6 +37,8 @@ export class AuthGuard implements CanActivate {
       if (request.user.secret && String(request.route.path).includes('2fa')) { // TODO: Рефактор
         return false;
       }
+
+      await this.userService.checkSecurity(request, decodedUser);
     } catch {
       throw new UnauthorizedException();
     }

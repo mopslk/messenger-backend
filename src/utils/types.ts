@@ -1,4 +1,6 @@
 import { UserResponseDto } from '@/users/dto/user.response.dto';
+import type { Request } from 'express';
+import type { User } from '@prisma/client';
 
 export type ErrorType = {
   response: {
@@ -15,10 +17,14 @@ export interface SuccessResponseType<T> {
 
 export type TokensResponseType = {
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string;
 };
 
 export type AuthResponseType = {
   user: UserResponseDto;
   tokens: TokensResponseType;
 };
+
+export type RequestWithUserType = {
+  user?: Promise<User>
+} & Request;
