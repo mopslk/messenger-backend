@@ -3,20 +3,27 @@ generator client {
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
+generator json {
+  provider = "prisma-json-types-generator"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id            BigInt       @id @default(dbgenerated("nextval('uqid'::regclass)")) @db.BigInt
-  login         String       @unique(map: "UQ_2d443082eccd5198f95f2a36e2c") @db.VarChar
-  name          String       @db.VarChar
-  password      String       @db.VarChar
-  bio           String?      @db.VarChar
-  avatar        String?      @db.VarChar
-  refresh_token String?      @db.VarChar
-  secret        String?      @db.VarChar
+  id                BigInt  @id @default(dbgenerated("nextval('uqid'::regclass)")) @db.BigInt
+  login             String  @unique(map: "UQ_2d443082eccd5198f95f2a36e2c") @db.VarChar
+  name              String  @db.VarChar
+  password          String  @db.VarChar
+  bio               String? @db.VarChar
+  avatar            String? @db.VarChar
+  refresh_token     String? @db.VarChar
+  secret            String? @db.VarChar
+  tokens_cleared_at String? @default("0") @db.VarChar
+  /// [UserInfoType]
+  info              Json    @default("{}")
   Message       Message[]
   ChatMember    ChatMember[]
 

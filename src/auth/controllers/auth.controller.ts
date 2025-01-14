@@ -1,5 +1,5 @@
 import {
-  BadRequestException, Body, Controller, Get, Post, Query,
+  BadRequestException, Body, Controller, Get, Ip, Headers, Post, Query,
 } from '@nestjs/common';
 import type { AuthResponseType } from '@/utils/types';
 import { AuthService } from '@/auth/services/auth.service';
@@ -18,7 +18,11 @@ export class AuthController {
 
   @Public()
   @Post('login')
-  async login(@Body() userLoginDto: UserLoginDto) {
+  async login(
+  @Body() userLoginDto: UserLoginDto,
+    @Ip() ip: string,
+    @Headers('user-agent') userAgent: string,
+  ) {
     const user = await this.authService.validateUser(userLoginDto);
 
     if (!user) {
@@ -27,7 +31,7 @@ export class AuthController {
 
     await this.authService.checkingForTwoFactor(user, userLoginDto?.code);
 
-    return this.authService.login(user);
+    return this.authService.login(user, { ip, userAgent });
   }
 
   @Public()

@@ -20,4 +20,10 @@ export class UserResponseDto {
 
   @Exclude()
     refresh_token: string;
+
+  @Exclude()
+    tokens_cleared_at: string;
+
+  @Exclude()
+    info: PrismaJson.UserInfoType;
 }
