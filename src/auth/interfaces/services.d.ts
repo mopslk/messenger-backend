@@ -18,5 +18,7 @@ export interface IAuthService {
 
   generateCode(user: User): Promise<string>;
 
+  checkingForTwoFactor(user: User, code?: string): Promise<void>
+
   setUserInfo(user: User, userInfo: PrismaJson.UserInfoType): Promise<void>;
 }

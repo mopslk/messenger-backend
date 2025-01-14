@@ -1,5 +1,5 @@
 import {
-  BadRequestException, Body, Controller, Get, Ip, Headers, Post, Query, UnauthorizedException,
+  BadRequestException, Body, Controller, Get, Ip, Headers, Post, Query,
 } from '@nestjs/common';
 import type { AuthResponseType } from '@/utils/types';
 import { AuthService } from '@/auth/services/auth.service';
@@ -29,17 +29,7 @@ export class AuthController {
       throw new BadRequestException('Invalid login or password!');
     }
 
-    if (user.secret && !userLoginDto?.code) {
-      throw new UnauthorizedException('2fa');
-    }
-
-    if (user.secret && userLoginDto?.code) {
-      const check2fa = await this.authService.verifyCode(user.secret, userLoginDto.code);
-
-      if (!check2fa) {
-        throw new BadRequestException('Invalid code!');
-      }
-    }
+    await this.authService.checkingForTwoFactor(user, userLoginDto?.code);
 
     return this.authService.login(user, { ip, userAgent });
   }
