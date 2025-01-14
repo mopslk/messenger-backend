@@ -6,16 +6,17 @@ import type { User } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { UserService } from '@/users/services/user.service';
 import type { IAuthService } from '@/auth/interfaces/services';
-import { hashCompare } from '@/utils/helpers/hash';
+import { hashCompare, hash } from '@/utils/helpers/hash';
 import { getTokenSignature } from '@/utils/helpers/token';
 import { UserRegisterDto } from '@/users/dto/user-register.dto';
-import type { AuthResponseType } from '@/utils/types';
+import type { AuthResponseType, TokensResponseType } from '@/utils/types';
 import { UserResponseDto } from '@/users/dto/user.response.dto';
 import { UserLoginDto } from '@/auth/dto/user-login.dto';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
 import { CACHE_MANAGER, type CacheStore } from '@nestjs/cache-manager';
-import { daysToMs } from '@/utils/helpers/day';
+import { convertDaysToMs, convertSecondsToMs } from '@/utils/helpers/formatters';
+import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -23,10 +24,11 @@ export class AuthService implements IAuthService {
     @Inject(forwardRef(() => UserService))
     private userService: UserService,
     private jwtService: JwtService,
+    private prisma: PrismaService,
     @Inject(CACHE_MANAGER) private cacheManager: CacheStore,
   ) {}
 
-  async validateUser(userLoginDto: UserLoginDto) {
+  async validateUser(userLoginDto: UserLoginDto): Promise<User | null> {
     const user = await this.userService.findBy('login', userLoginDto.login);
     const matchPasswords = await hashCompare(userLoginDto.password, user.password);
 
@@ -36,13 +38,17 @@ export class AuthService implements IAuthService {
     return null;
   }
 
-  async generateTokens(userId: bigint) {
+  async generateTokens(userId: bigint, onlyAccessToken?: boolean): Promise<TokensResponseType> {
     const payload = { sub: userId.toString() };
 
     const accessToken = await this.jwtService.signAsync(payload, {
       secret    : process.env.JWT_SECRET_KEY,
       expiresIn : '30m',
     });
+
+    if (onlyAccessToken) {
+      return { accessToken };
+    }
 
     const refreshToken = await this.jwtService.signAsync(payload, {
       secret    : process.env.JWT_REFRESH_SECRET_KEY,
@@ -55,7 +61,7 @@ export class AuthService implements IAuthService {
     };
   }
 
-  async refresh(refreshToken: string) {
+  async refresh(refreshToken: string): Promise<TokensResponseType> {
     const userDataFromToken = await this.jwtService.verifyAsync(refreshToken, {
       secret: process.env.JWT_REFRESH_SECRET_KEY,
     });
@@ -68,24 +74,27 @@ export class AuthService implements IAuthService {
       throw new BadRequestException('Invalid refresh token');
     }
 
-    const tokens = await this.generateTokens(user.id);
-
-    if ((Number(userDataFromToken.exp) - Date.now()) <= daysToMs(1)) {
+    if (convertSecondsToMs(Number(userDataFromToken.exp)) - Date.now() <= convertDaysToMs(1)) {
+      const tokens = await this.generateTokens(user.id);
       await this.userService.updateUserRefreshToken(user, tokens.refreshToken);
 
       return tokens;
     }
 
+    const { accessToken } = await this.generateTokens(user.id, true);
+
     return {
       refreshToken,
-      accessToken: tokens.accessToken,
+      accessToken,
     };
   }
 
-  async login(user: User): Promise<AuthResponseType> {
+  async login(user: User, userInfo: PrismaJson.UserInfoType): Promise<AuthResponseType> {
     const tokens = await this.generateTokens(user.id);
 
     await this.userService.updateUserRefreshToken(user, tokens.refreshToken);
+
+    await this.setUserInfo(user, userInfo);
 
     return {
       user: plainToInstance(UserResponseDto, user),
@@ -151,5 +160,19 @@ export class AuthService implements IAuthService {
     const otpAuthUrl = authenticator.keyuri('', '', secret);
 
     return toDataURL(otpAuthUrl);
+  }
+
+  async setUserInfo(user: User, userInfo: PrismaJson.UserInfoType): Promise<void> {
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        info: {
+          ip        : await hash(userInfo.ip),
+          userAgent : await hash(userInfo.userAgent),
+        },
+      },
+    });
   }
 }
