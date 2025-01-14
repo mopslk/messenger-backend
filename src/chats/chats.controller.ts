@@ -1,38 +1,42 @@
 import {
-  Body, Controller, Delete, Get, Param, Patch, Post,
+  Body, Controller, Delete, Get, Param, Patch, Post, UseGuards,
 } from '@nestjs/common';
 import type { User } from '@prisma/client';
 import { CurrentUser } from '@/utils/decorators/current-user.decorator';
 import { ChatsService } from '@/chats/chats.service';
 import { CreateChatDto } from '@/chats/dto/create-chat.dto';
 import { UpdateChatDto } from '@/chats/dto/update-chat.dto';
+import { ChatGuard } from '@/chats/utils/chat.guard';
 
 @Controller('chats')
 export class ChatsController {
   constructor(private readonly chatsService: ChatsService) {}
 
   @Post()
-  create(@Body() createChatDto: CreateChatDto) {
-    return this.chatsService.create(createChatDto);
+  async create(@CurrentUser() user: User, @Body() createChatDto: CreateChatDto) {
+    return this.chatsService.create(createChatDto, user);
   }
 
   @Get()
-  findAll(@CurrentUser() user: User) {
+  async findAll(@CurrentUser() user: User) {
     return this.chatsService.findAll(user.id);
   }
 
+  @UseGuards(ChatGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.chatsService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return this.chatsService.findOne(BigInt(id));
   }
 
+  @UseGuards(ChatGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateChatDto: UpdateChatDto) {
-    return this.chatsService.update(+id, updateChatDto);
+  async update(@Param('id') id: string, @Body() updateChatDto: UpdateChatDto) {
+    return this.chatsService.update(BigInt(id), updateChatDto);
   }
 
+  @UseGuards(ChatGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.chatsService.remove(+id);
+  async remove(@CurrentUser() user: User, @Param('id') id: string) {
+    return this.chatsService.remove(BigInt(id), user.id);
   }
 }

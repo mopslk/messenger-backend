@@ -2,7 +2,7 @@ import { Transform } from 'class-transformer';
 import type { ChatMembersType } from '@/utils/types';
 import type { ChatType, Message } from '@prisma/client';
 
-export class ChatResponseDto {
+export class ChatListResponseDto {
   @Transform(({ value }) => value.toString())
     id: string;
 
@@ -12,15 +12,11 @@ export class ChatResponseDto {
 
   created_at: string;
 
+  last_message: Pick<Message, 'content' | 'created_at'>;
+
   @Transform(({ value }) => value.map(({ user, role }) => ({
     ...user,
     role,
   })), { toPlainOnly: true }) // Убираем лишние поля оставляя только `user` и `role`
     members: ChatMembersType[];
-
-  @Transform(({ value }) => value.map((message) => ({
-    ...message,
-    id: message.id.toString(),
-  })), { toPlainOnly: true })
-    messages: Omit<Message, 'chat_id' | 'user_id'>[];
 }
