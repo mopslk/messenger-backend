@@ -50,9 +50,9 @@ model Message {
   user_id         BigInt
   content         String
   attachments     MessageAttachments[]
-  chat            Chat                 @relation("ChatMessages", fields: [chat_id], references: [id]) // Связь для всех сообщений чата
+  chat            Chat                 @relation("ChatMessages", fields: [chat_id], references: [id], onDelete: Cascade) // Связь для всех сообщений чата
   as_last_message Chat?                @relation("LastMessage") // Обратная связь для lastMessage
-  user            User                 @relation(fields: [user_id], references: [id])
+  user            User                 @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(0)
   created_at DateTime @default(now()) @db.Timestamptz(0)
@@ -65,8 +65,8 @@ model ChatMember {
   chat_id BigInt
   user_id BigInt
   role    Role?
-  user    User   @relation(fields: [user_id], references: [id])
-  chat    Chat?  @relation(fields: [chat_id], references: [id])
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  chat    Chat?  @relation(fields: [chat_id], references: [id], onDelete: Cascade)
 
   @@id([chat_id, user_id])
   @@index([chat_id, user_id])
@@ -83,7 +83,7 @@ model MessageAttachments {
   message_id BigInt
   type       AttachmentType @default(image)
   path       String
-  Message    Message        @relation(fields: [message_id], references: [id])
+  Message    Message        @relation(fields: [message_id], references: [id], onDelete: Cascade)
 
   @@id([message_id])
   @@index([message_id])
