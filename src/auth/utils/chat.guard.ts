@@ -1,5 +1,5 @@
 import {
-  CanActivate, ExecutionContext, Injectable, UnauthorizedException,
+  CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
@@ -25,9 +25,9 @@ export class ChatGuard implements CanActivate {
         secret: process.env.JWT_SECRET,
       });
 
-      return await this.chatService.checkUserAccessToChat(decodedUser.sub, BigInt(request.params.id));
+      return await this.chatService.checkUserAccessToChat(BigInt(decodedUser.sub), BigInt(request.params.id));
     } catch {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
   }
 

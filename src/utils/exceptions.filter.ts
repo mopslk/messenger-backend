@@ -22,7 +22,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const responseBody = {
       data: {
-        error: (exception as ErrorType)?.response?.message,
+        error: (exception as ErrorType)?.response,
       },
       success: false,
     };

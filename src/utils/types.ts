@@ -52,3 +52,8 @@ export type MessageCreateInput = {
   message: CreateMessageType;
   attachments: Omit<MessageAttachments, 'message_id'>[]
 };
+
+export type MessageUpdateInput = {
+  message_id: bigint;
+  content: string;
+};

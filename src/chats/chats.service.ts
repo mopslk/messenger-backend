@@ -1,7 +1,10 @@
-import { Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable, InternalServerErrorException, UnauthorizedException,
+} from '@nestjs/common';
 import { CreateChatDto } from '@/chats/dto/create-chat.dto';
 import { UpdateChatDto } from '@/chats/dto/update-chat.dto';
-import Query from '@/chats/utils/queries';
+import { ChatQuery as Query } from '@/queries/utils/chatQuery';
+import { MessageQuery } from '@/queries/utils/messageQuery';
 import { ChatListResponseDto } from '@/chats/dto/chat-list-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { ChatType, Role, type User } from '@prisma/client';
@@ -12,6 +15,7 @@ import { ChatResponseDto } from '@/chats/dto/chat-response.dto';
 export class ChatsService {
   constructor(
     private query: Query,
+    private messageQuery: MessageQuery,
   ) {}
 
   async create(createChatDto: CreateChatDto, user: User) {
@@ -34,7 +38,7 @@ export class ChatsService {
     await this.query.addMembersToChat(chatMembers);
 
     if (createChatDto.message) {
-      const message = await this.query.createMessage({
+      const message = await this.messageQuery.createMessage({
         message: {
           user_id : user.id,
           chat_id : chat.id,
@@ -48,7 +52,7 @@ export class ChatsService {
 
     const createdChat = await this.query.getChat(chat.id);
 
-    return plainToInstance(ChatResponseDto, createdChat);
+    return plainToInstance(ChatResponseDto, ChatResponseDto.from(createdChat));
   }
 
   async findAll(userId: bigint): Promise<ChatListResponseDto[]> {
@@ -60,7 +64,8 @@ export class ChatsService {
 
   async findOne(id: bigint) {
     const chat = await this.query.getChat(id);
-    return plainToInstance(ChatResponseDto, chat);
+
+    return plainToInstance(ChatResponseDto, ChatResponseDto.from(chat));
   }
 
   async update(id: bigint, updateChatDto: UpdateChatDto) {
@@ -71,7 +76,7 @@ export class ChatsService {
     }
 
     const updatedChat = await this.query.updateChat(id, updateChatDto);
-    return plainToInstance(ChatResponseDto, updatedChat);
+    return plainToInstance(ChatResponseDto, ChatResponseDto.from(updatedChat));
   }
 
   async remove(chatId: bigint, userId: bigint) {

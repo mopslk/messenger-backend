@@ -24,6 +24,8 @@
     },
     "types": [
       "node",
+      "express",
+      "multer",
       "@types/jest",
     ]
   },

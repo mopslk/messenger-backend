@@ -1,11 +1,11 @@
 import { PrismaService } from '@/prisma/prisma.service';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { ChatType, type MessageAttachments } from '@prisma/client';
-import type { ChatMembersCreateInput, MessageCreateInput } from '@/utils/types';
+import { Injectable } from '@nestjs/common';
+import { ChatType } from '@prisma/client';
+import type { ChatMembersCreateInput } from '@/utils/types';
 import { UpdateChatDto } from '@/chats/dto/update-chat.dto';
 
 @Injectable()
-export default class Query {
+export class ChatQuery {
   constructor(
     private prisma: PrismaService,
   ) {}
@@ -69,11 +69,13 @@ export default class Query {
         name     : true,
         type     : true,
         messages : {
-          select: {
-            id         : true,
-            content    : true,
-            created_at : true,
-            updated_at : true,
+          include: {
+            attachments: {
+              select: {
+                path : true,
+                type : true,
+              },
+            },
           },
         },
         members: {
@@ -133,30 +135,6 @@ export default class Query {
     return this.prisma.chatMember.createMany({
       data: members,
     });
-  }
-
-  async createMessage(messageCreateInput: MessageCreateInput) {
-    const message = await this.prisma.message.create({
-      data: messageCreateInput.message,
-    });
-
-    if (!message) {
-      throw new InternalServerErrorException('Failed to create messages');
-    }
-
-    if (messageCreateInput.attachments.length) {
-      this.prisma.messageAttachments.createMany({
-        data: messageCreateInput.attachments.reduce<MessageAttachments[]>((acc, attachment) => ([
-          ...acc,
-          {
-            ...attachment,
-            message_id: message.id,
-          },
-        ]), []),
-      });
-    }
-
-    return message;
   }
 
   async getUserAccessInChat(userId: bigint, chatId: bigint) {
