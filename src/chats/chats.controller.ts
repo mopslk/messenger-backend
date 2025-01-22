@@ -6,7 +6,7 @@ import { CurrentUser } from '@/utils/decorators/current-user.decorator';
 import { ChatsService } from '@/chats/chats.service';
 import { CreateChatDto } from '@/chats/dto/create-chat.dto';
 import { UpdateChatDto } from '@/chats/dto/update-chat.dto';
-import { ChatGuard } from '@/chats/utils/chat.guard';
+import { ChatGuard } from '@/auth/utils/chat.guard';
 
 @Controller('chats')
 export class ChatsController {
