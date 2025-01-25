@@ -1,13 +1,13 @@
-// eslint-disable-next-line import/no-cycle
-import { AuthModule } from '@/auth/auth.module';
-import { forwardRef, Module } from '@nestjs/common';
-import { UserService } from '@/users/services/user.service';
-import { UserController } from '@/users/controllers/user.controller';
+import { Module } from '@nestjs/common';
+import { UserService } from '@/users/user.service';
+import { UserController } from '@/users/user.controller';
+import { QueriesModule } from '@/queries/queries.module';
+import { UserQuery } from '@/queries/utils/userQuery';
 
 @Module({
-  imports     : [forwardRef(() => AuthModule)],
+  imports     : [QueriesModule],
   controllers : [UserController],
-  providers   : [UserService],
+  providers   : [UserService, UserQuery],
   exports     : [UserService],
 })
 export class UsersModule {}
