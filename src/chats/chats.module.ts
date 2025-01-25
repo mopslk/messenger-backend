@@ -1,6 +1,4 @@
-// eslint-disable-next-line import/no-cycle
-import { MessagesModule } from '@/messages/messages.module';
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ChatsService } from '@/chats/chats.service';
 import { ChatsController } from '@/chats/chats.controller';
 import { AuthModule } from '@/auth/auth.module';
@@ -9,7 +7,7 @@ import { ChatQuery } from '@/queries/utils/chatQuery';
 import { MessageQuery } from '@/queries/utils/messageQuery';
 
 @Module({
-  imports     : [AuthModule, forwardRef(() => MessagesModule), QueriesModule],
+  imports     : [AuthModule, QueriesModule],
   controllers : [ChatsController],
   providers   : [ChatsService, ChatQuery, MessageQuery],
   exports     : [ChatsService],
