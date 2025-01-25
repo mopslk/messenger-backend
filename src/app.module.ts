@@ -11,6 +11,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { ChatsModule } from '@/chats/chats.module';
 import { MessagesModule } from '@/messages/messages.module';
 import { FilesModule } from '@/files/files.module';
+import { GatewayModule } from '@/gateway/gateway.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { FilesModule } from '@/files/files.module';
     }),
     MessagesModule,
     FilesModule,
+    GatewayModule,
   ],
   controllers : [],
   providers   : [
