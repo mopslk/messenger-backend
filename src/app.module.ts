@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from '@/auth/utils/auth.guard';
+import { AuthGuard } from '@/auth/guards/auth.guard';
 import { UniqueConstraint } from '@/utils/decorators/unique.decorator';
 import { PrismaModule } from '@/prisma/prisma.module';
 import { AuthModule } from '@/auth/auth.module';
@@ -8,9 +8,9 @@ import { UsersModule } from '@/users/users.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisConfig } from '@/utils/helpers/storageConfigs';
 import { MulterModule } from '@nestjs/platform-express';
-import { ChatsModule } from './chats/chats.module';
-import { MessagesModule } from './messages/messages.module';
-import { FilesModule } from './files/files.module';
+import { ChatsModule } from '@/chats/chats.module';
+import { MessagesModule } from '@/messages/messages.module';
+import { FilesModule } from '@/files/files.module';
 
 @Module({
   imports: [

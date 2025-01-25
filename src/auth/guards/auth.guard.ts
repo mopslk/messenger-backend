@@ -4,7 +4,7 @@ import {
 import type { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
-import { UserService } from '@/users/services/user.service';
+import { UserService } from '@/users/user.service';
 import type { JwtPayload } from 'jsonwebtoken';
 
 @Injectable()

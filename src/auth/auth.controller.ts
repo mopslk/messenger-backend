@@ -2,7 +2,7 @@ import {
   BadRequestException, Body, Controller, Get, Ip, Headers, Post, Query,
 } from '@nestjs/common';
 import type { AuthResponseType } from '@/utils/types';
-import { AuthService } from '@/auth/services/auth.service';
+import { AuthService } from '@/auth/auth.service';
 import { Public } from '@/utils/decorators/public.decorator';
 import { RefreshDto } from '@/auth/dto/refresh.dto';
 import { UserRegisterDto } from '@/users/dto/user-register.dto';

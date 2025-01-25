@@ -1,53 +1,31 @@
-import {
-  forwardRef, Inject, Injectable, UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import type { User } from '@prisma/client';
-import type { IUserService } from '@/users/interfaces/services';
 import { hash, hashCompare } from '@/utils/helpers/hash';
 import { getTokenSignature } from '@/utils/helpers/token';
-import { PrismaService } from '@/prisma/prisma.service';
 import { UserRegisterDto } from '@/users/dto/user-register.dto';
 import type { RequestWithUserType } from '@/utils/types';
 import type { JwtPayload } from 'jsonwebtoken';
 import { convertSecondsToMs } from '@/utils/helpers/formatters';
+import { UserQuery } from '@/queries/utils/userQuery';
 
 @Injectable()
-export class UserService implements IUserService {
+export class UserService {
   constructor(
-    @Inject(forwardRef(() => PrismaService))
-    private prisma: PrismaService,
+    private query: UserQuery,
   ) {}
 
   async findBy(property: keyof User, value: unknown): Promise<User> {
-    return this.prisma.user.findFirst({
-      where: {
-        [property]: value,
-      },
-    });
+    return this.query.findBy(property, value);
   }
 
   async updateUserRefreshToken(user: User, refreshToken: string): Promise<void> {
     const hashedRefreshToken = await hash(getTokenSignature(refreshToken));
 
-    await this.prisma.user.update({
-      where: {
-        id: user.id,
-      },
-      data: {
-        refresh_token: hashedRefreshToken,
-      },
-    });
+    await this.query.updateUserRefreshToken(user.id, hashedRefreshToken);
   }
 
   async setTwoFactorAuthenticationSecret(secret: string, userId: bigint): Promise<void> {
-    await this.prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        secret,
-      },
-    });
+    await this.query.setTwoFactorAuthenticationSecret(secret, userId);
   }
 
   async checkSecurity(request: RequestWithUserType, decodedUser: JwtPayload): Promise<void> {
@@ -74,15 +52,7 @@ export class UserService implements IUserService {
   }
 
   async removeRefreshToken(userId: bigint): Promise<void> {
-    await this.prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        refresh_token     : null,
-        tokens_cleared_at : String(Date.now()),
-      },
-    });
+    await this.query.removeRefreshToken(userId);
   }
 
   async createUser(data: UserRegisterDto): Promise<User> {
@@ -91,8 +61,6 @@ export class UserService implements IUserService {
     data.setPassword(hashedPassword);
     data.removePasswordConfirmationField();
 
-    return this.prisma.user.create({
-      data,
-    });
+    return this.query.createUser(data);
   }
 }

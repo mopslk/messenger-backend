@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  forwardRef,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -9,13 +8,12 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import type { User } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
-import { UserService } from '@/users/services/user.service';
-import type { IAuthService } from '@/auth/interfaces/services';
+import { UserService } from '@/users/user.service';
 import { hashCompare, hash } from '@/utils/helpers/hash';
 import { getTokenSignature } from '@/utils/helpers/token';
 import { UserRegisterDto } from '@/users/dto/user-register.dto';
 import type { AuthResponseType, TokensResponseType } from '@/utils/types';
-import { UserResponseDto } from '@/users/dto/user.response.dto';
+import { UserResponseDto } from '@/users/dto/user-response.dto';
 import { UserLoginDto } from '@/auth/dto/user-login.dto';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
@@ -24,9 +22,8 @@ import { convertDaysToMs, convertSecondsToMs } from '@/utils/helpers/formatters'
 import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
-export class AuthService implements IAuthService {
+export class AuthService {
   constructor(
-    @Inject(forwardRef(() => UserService))
     private userService: UserService,
     private jwtService: JwtService,
     private prisma: PrismaService,

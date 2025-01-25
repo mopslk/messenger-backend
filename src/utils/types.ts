@@ -1,4 +1,4 @@
-import { UserResponseDto } from '@/users/dto/user.response.dto';
+import { UserResponseDto } from '@/users/dto/user-response.dto';
 import type { Request } from 'express';
 import type { User, MessageAttachments, Role } from '@prisma/client';
 
