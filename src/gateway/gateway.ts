@@ -1,23 +1,31 @@
 import {
-  MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer,
+  OnGatewayConnection,
+  WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { OnModuleInit } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
 @WebSocketGateway()
-export class ChatGateway implements OnModuleInit {
+export class ChatGateway implements OnGatewayConnection {
   @WebSocketServer()
     server: Server;
 
-  onModuleInit() {
-    this.server.on('connection', (socket: Socket) => {
-      console.log('Connected');
-      console.log(socket.id);
-    });
-  }
+  constructor(private readonly jwtService: JwtService) {}
 
-  @SubscribeMessage('newMessage')
-  onNewMessage(@MessageBody() body: string) {
-    console.log(body);
+  // TODO: Рефактор, guards не применяются
+  async handleConnection(client: Socket) {
+    const token = client.handshake.headers.authorization;
+    if (!token) {
+      client.disconnect();
+    }
+
+    try {
+      const user = await this.jwtService.verify(token);
+
+      client.join(user.sub);
+    } catch (error) {
+      client.disconnect();
+    }
   }
 }
