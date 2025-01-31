@@ -90,8 +90,6 @@ export class MessagesService {
 
     if (!message) throw new InternalServerErrorException('Message not found');
 
-    await this.query.deleteMessage(id);
-
     const roomMembers = await this.chatQuery.getChatMembers(message.chat_id);
 
     const chatMemberIds = formatChatMembers(roomMembers, userId);
