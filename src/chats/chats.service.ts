@@ -6,7 +6,7 @@ import { UpdateChatDto } from '@/chats/dto/update-chat.dto';
 import { ChatQuery } from '@/queries/utils/chatQuery';
 import { MessageQuery } from '@/queries/utils/messageQuery';
 import { ChatListResponseDto } from '@/chats/dto/chat-list-response.dto';
-import { plainToInstance } from 'class-transformer';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { ChatType, Role, type User } from '@prisma/client';
 import type { ChatMembersCreateInput } from '@/utils/types';
 import { ChatResponseDto } from '@/chats/dto/chat-response.dto';
@@ -64,8 +64,8 @@ export class ChatsService {
 
     await this.notificationsService.sendSocketEvent(
       chatMemberIds,
-      NotificationType[NotificationType.NewChat],
-      response,
+      NotificationType.NewChat,
+      instanceToPlain(response),
     );
 
     return response;
@@ -101,8 +101,8 @@ export class ChatsService {
 
     await this.notificationsService.sendSocketEvent(
       chatMemberIds,
-      NotificationType[NotificationType.UpdateChat],
-      response,
+      NotificationType.UpdateChat,
+      instanceToPlain(response),
     );
 
     return response;
@@ -123,7 +123,7 @@ export class ChatsService {
 
     await this.notificationsService.sendSocketEvent(
       chatMemberIds,
-      NotificationType[NotificationType.RemoveChat],
+      NotificationType.RemoveChat,
       { chatId },
     );
   }

@@ -32,6 +32,6 @@ export class AppGateway implements OnGatewayConnection {
   }
 
   async sendNotification(roomId: string[] | string, event: string, data: any): Promise<void> {
-    this.server.to(roomId).emit(event, data);
+    this.server.to(roomId).emit(event, await data);
   }
 }

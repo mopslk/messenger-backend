@@ -4,7 +4,7 @@ import { getFileType, getFileUrl } from '@/utils/helpers/file';
 import { CreateMessageDto } from '@/messages/dto/create-message.dto';
 import { UpdateMessageDto } from '@/messages/dto/update-message.dto';
 import { MessageResponseDto } from '@/messages/dto/message-response.dto';
-import { plainToInstance } from 'class-transformer';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { NotificationsService } from '@/notifications/notifications.service';
 import { NotificationType } from '@/notifications/enums/events-enum';
 import { ChatQuery } from '@/queries/utils/chatQuery';
@@ -48,8 +48,8 @@ export class MessagesService {
 
       await this.notificationsService.sendSocketEvent(
         chatMemberIds,
-        NotificationType[NotificationType.NewMessage],
-        JSON.stringify(response),
+        NotificationType.NewMessage,
+        instanceToPlain(response),
       );
 
       return response;
@@ -74,8 +74,8 @@ export class MessagesService {
 
     await this.notificationsService.sendSocketEvent(
       chatMemberIds,
-      NotificationType[NotificationType.UpdateMessage],
-      response,
+      NotificationType.UpdateMessage,
+      instanceToPlain(response),
     );
 
     return response;
@@ -98,7 +98,7 @@ export class MessagesService {
 
     await this.notificationsService.sendSocketEvent(
       chatMemberIds,
-      NotificationType[NotificationType.DeleteMessage],
+      NotificationType.DeleteMessage,
       { messageId: id.toString(), chatId: message.chat_id.toString() },
     );
   }
