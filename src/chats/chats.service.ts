@@ -17,7 +17,7 @@ import { formatChatMembers } from '@/utils/helpers/formatters';
 @Injectable()
 export class ChatsService {
   constructor(
-    private chatQuery: ChatQuery,
+    private query: ChatQuery,
     private messageQuery: MessageQuery,
     private notificationsService: NotificationsService,
   ) {}
@@ -25,7 +25,7 @@ export class ChatsService {
   async create(createChatDto: CreateChatDto, user: User) {
     const { name, type } = createChatDto;
 
-    const chat = await this.chatQuery.createChat(type, name);
+    const chat = await this.query.createChat(type, name);
 
     if (!chat) {
       throw new InternalServerErrorException('Failed to create chat');
@@ -39,7 +39,7 @@ export class ChatsService {
       ]), []),
     ];
 
-    await this.chatQuery.addMembersToChat(chatMembers);
+    await this.query.addMembersToChat(chatMembers);
 
     if (createChatDto.message) {
       const message = await this.messageQuery.createMessage({
@@ -51,14 +51,14 @@ export class ChatsService {
         attachments: [],
       });
 
-      await this.chatQuery.updateChat(chat.id, createChatDto, message.id);
+      await this.query.updateChat(chat.id, createChatDto, message.id);
     }
 
-    const createdChat = await this.chatQuery.getChat(chat.id);
+    const createdChat = await this.query.getChat(chat.id);
 
     const response = plainToInstance(ChatResponseDto, ChatResponseDto.from(createdChat));
 
-    const roomMembers = await this.chatQuery.getChatMembers(createdChat.id);
+    const roomMembers = await this.query.getChatMembers(createdChat.id);
 
     const chatMemberIds = formatChatMembers(roomMembers, user.id);
 
@@ -72,30 +72,30 @@ export class ChatsService {
   }
 
   async findAll(userId: bigint): Promise<ChatListResponseDto[]> {
-    const userChats = await this.chatQuery.getUserChats(userId);
+    const userChats = await this.query.getUserChats(userId);
 
     const mappedChats = userChats.map(({ chat }) => chat);
     return plainToInstance(ChatListResponseDto, mappedChats);
   }
 
   async findOne(id: bigint) {
-    const chat = await this.chatQuery.getChat(id);
+    const chat = await this.query.getChat(id);
 
     return plainToInstance(ChatResponseDto, ChatResponseDto.from(chat));
   }
 
   async update(id: bigint, updateChatDto: UpdateChatDto, userId: bigint) {
-    const chat = await this.chatQuery.getChat(id);
+    const chat = await this.query.getChat(id);
 
     if (chat.type !== ChatType.group) {
       throw new InternalServerErrorException('Private chat can\'t be updated!');
     }
 
-    const updatedChat = await this.chatQuery.updateChat(id, updateChatDto);
+    const updatedChat = await this.query.updateChat(id, updateChatDto);
 
     const response = plainToInstance(ChatResponseDto, ChatResponseDto.from(updatedChat));
 
-    const roomMembers = await this.chatQuery.getChatMembers(chat.id);
+    const roomMembers = await this.query.getChatMembers(chat.id);
 
     const chatMemberIds = formatChatMembers(roomMembers, userId);
 
@@ -109,15 +109,15 @@ export class ChatsService {
   }
 
   async remove(chatId: bigint, userId: bigint) {
-    const userAccess = await this.chatQuery.getUserAccessInChat(userId, chatId);
+    const userAccess = await this.query.getUserAccessInChat(userId, chatId);
 
     if (userAccess.role && userAccess.role !== Role.admin) {
       throw new UnauthorizedException();
     }
 
-    await this.chatQuery.removeChat(chatId);
+    await this.query.removeChat(chatId);
 
-    const roomMembers = await this.chatQuery.getChatMembers(chatId);
+    const roomMembers = await this.query.getChatMembers(chatId);
 
     const chatMemberIds = formatChatMembers(roomMembers, userId);
 
@@ -129,7 +129,7 @@ export class ChatsService {
   }
 
   async checkUserAccessToChat(userId: bigint, chatId: bigint) {
-    const memberRow = await this.chatQuery.getUserAccessInChat(userId, chatId);
+    const memberRow = await this.query.getUserAccessInChat(userId, chatId);
 
     return memberRow !== null;
   }

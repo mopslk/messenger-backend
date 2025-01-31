@@ -13,7 +13,7 @@ import { formatChatMembers } from '@/utils/helpers/formatters';
 @Injectable()
 export class MessagesService {
   constructor(
-    private messageQuery: MessageQuery,
+    private query: MessageQuery,
     private chatQuery: ChatQuery,
     private notificationsService: NotificationsService,
   ) {}
@@ -29,7 +29,7 @@ export class MessagesService {
     const attachments = this.getMessageAttachments(files);
 
     try {
-      const message = await this.messageQuery.createMessage({
+      const message = await this.query.createMessage({
         message: {
           content : createMessageDto.content,
           chat_id : chatId,
@@ -59,7 +59,7 @@ export class MessagesService {
   }
 
   async update(id: bigint, updateMessageDto: UpdateMessageDto, userId: bigint) {
-    const updatedMessage = await this.messageQuery.updateMessage({
+    const updatedMessage = await this.query.updateMessage({
       message_id: id,
       ...updateMessageDto,
     });
@@ -82,15 +82,15 @@ export class MessagesService {
   }
 
   async checkUserAccessToMessage(userId: bigint, messageId: bigint) {
-    return this.messageQuery.checkUserAccessToMessage(userId, messageId);
+    return this.query.checkUserAccessToMessage(userId, messageId);
   }
 
   async remove(id: bigint, userId: bigint) {
-    const message = await this.messageQuery.deleteMessage(id);
+    const message = await this.query.deleteMessage(id);
 
     if (!message) throw new InternalServerErrorException('Message not found');
 
-    await this.messageQuery.deleteMessage(id);
+    await this.query.deleteMessage(id);
 
     const roomMembers = await this.chatQuery.getChatMembers(message.chat_id);
 
