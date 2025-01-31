@@ -31,13 +31,13 @@ export class MessagesController {
 
   @UseGuards(MessageGuard)
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateMessageDto: UpdateMessageDto) {
-    return this.messagesService.update(BigInt(id), updateMessageDto);
+  async update(@Param('id') id: string, @Body() updateMessageDto: UpdateMessageDto, @CurrentUser() user: User) {
+    return this.messagesService.update(BigInt(id), updateMessageDto, user.id);
   }
 
   @UseGuards(MessageGuard)
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return this.messagesService.remove(BigInt(id));
+  async remove(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.messagesService.remove(BigInt(id), user.id);
   }
 }

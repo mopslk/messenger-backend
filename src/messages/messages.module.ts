@@ -4,6 +4,7 @@ import { AuthModule } from '@/auth/auth.module';
 import { QueriesModule } from '@/queries/queries.module';
 import { MessageQuery } from '@/queries/utils/messageQuery';
 import { ChatQuery } from '@/queries/utils/chatQuery';
+import { NotificationsModule } from '@/notifications/notifications.module';
 import { MessagesService } from './messages.service';
 import { MessagesController } from './messages.controller';
 
@@ -12,6 +13,7 @@ import { MessagesController } from './messages.controller';
     AuthModule,
     ChatsModule,
     QueriesModule,
+    NotificationsModule,
   ],
   controllers : [MessagesController],
   providers   : [MessagesService, MessageQuery, ChatQuery],

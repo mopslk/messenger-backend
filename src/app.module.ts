@@ -12,6 +12,7 @@ import { ChatsModule } from '@/chats/chats.module';
 import { MessagesModule } from '@/messages/messages.module';
 import { FilesModule } from '@/files/files.module';
 import { GatewayModule } from '@/gateway/gateway.module';
+import { NotificationsModule } from '@/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { GatewayModule } from '@/gateway/gateway.module';
     MessagesModule,
     FilesModule,
     GatewayModule,
+    NotificationsModule,
   ],
   controllers : [],
   providers   : [
