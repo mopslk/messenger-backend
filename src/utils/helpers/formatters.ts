@@ -8,8 +8,9 @@ export function convertSecondsToMs(seconds: number): number {
 
 export function formatChatMembers(membersList, userId: bigint): string[] {
   return membersList.reduce(
-    (result: string[], member: any) => (member.user_id.toString() !== userId.toString()
-      ? [...result, member.user_id.toString()] : result),
+    (result: string[], member: any) => (member.user_id !== userId
+      ? [...result, member.user_id.toString()]
+      : result),
     [],
   );
 }
