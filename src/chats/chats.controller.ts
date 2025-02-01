@@ -30,8 +30,8 @@ export class ChatsController {
 
   @UseGuards(ChatGuard)
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateChatDto: UpdateChatDto) {
-    return this.chatsService.update(BigInt(id), updateChatDto);
+  async update(@Param('id') id: string, @Body() updateChatDto: UpdateChatDto, @CurrentUser() user: User) {
+    return this.chatsService.update(BigInt(id), updateChatDto, user.id);
   }
 
   @UseGuards(ChatGuard)

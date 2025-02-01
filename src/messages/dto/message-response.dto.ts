@@ -19,6 +19,10 @@ export class MessageResponseDto {
   @Expose({ name: 'updated_at' })
     updatedAt: string;
 
+  @Expose({ name: 'chat_id' })
+  @Transform(({ value }) => value.toString())
+    chatId: string;
+
   static async from(data: any) {
     return Object.assign(data, {
       content: data.content ? await decrypt(data.content) : '',

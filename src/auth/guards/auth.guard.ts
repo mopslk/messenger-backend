@@ -32,7 +32,7 @@ export class AuthGuard implements CanActivate {
       const decodedUser = await this.jwtService.verifyAsync<JwtPayload>(token, {
         secret: process.env.JWT_SECRET,
       });
-      request.user = this.userService.findBy('id', decodedUser.sub);
+      request.user = await this.userService.findBy('id', decodedUser.sub);
 
       if (request.user.secret && String(request.route.path).includes('2fa')) { // TODO: Рефактор
         return false;

@@ -4,12 +4,18 @@ import { getFileType, getFileUrl } from '@/utils/helpers/file';
 import { CreateMessageDto } from '@/messages/dto/create-message.dto';
 import { UpdateMessageDto } from '@/messages/dto/update-message.dto';
 import { MessageResponseDto } from '@/messages/dto/message-response.dto';
-import { plainToInstance } from 'class-transformer';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
+import { NotificationsService } from '@/notifications/notifications.service';
+import { NotificationType } from '@/notifications/enums/events-enum';
+import { ChatQuery } from '@/queries/utils/chatQuery';
+import { formatChatMembers } from '@/utils/helpers/formatters';
 
 @Injectable()
 export class MessagesService {
   constructor(
     private query: MessageQuery,
+    private chatQuery: ChatQuery,
+    private notificationsService: NotificationsService,
   ) {}
 
   getMessageAttachments(files: Express.Multer.File[]) {
@@ -32,30 +38,66 @@ export class MessagesService {
         attachments,
       });
 
-      return plainToInstance(MessageResponseDto, MessageResponseDto.from(message), {
+      const response = plainToInstance(MessageResponseDto, MessageResponseDto.from(message), {
         excludeExtraneousValues: true,
       });
+
+      const roomMembers = await this.chatQuery.getChatMembers(chatId);
+
+      const chatMemberIds = formatChatMembers(roomMembers, userId);
+
+      await this.notificationsService.sendSocketEvent(
+        chatMemberIds,
+        NotificationType.NewMessage,
+        instanceToPlain(response),
+      );
+
+      return response;
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
   }
 
-  async update(id: bigint, updateMessageDto: UpdateMessageDto) {
+  async update(id: bigint, updateMessageDto: UpdateMessageDto, userId: bigint) {
     const updatedMessage = await this.query.updateMessage({
       message_id: id,
       ...updateMessageDto,
     });
 
-    return plainToInstance(MessageResponseDto, MessageResponseDto.from(updatedMessage), {
+    const response = plainToInstance(MessageResponseDto, MessageResponseDto.from(updatedMessage), {
       excludeExtraneousValues: true,
     });
+
+    const roomMembers = await this.chatQuery.getChatMembers(updatedMessage.chat_id);
+
+    const chatMemberIds = formatChatMembers(roomMembers, userId);
+
+    await this.notificationsService.sendSocketEvent(
+      chatMemberIds,
+      NotificationType.UpdateMessage,
+      instanceToPlain(response),
+    );
+
+    return response;
   }
 
   async checkUserAccessToMessage(userId: bigint, messageId: bigint) {
     return this.query.checkUserAccessToMessage(userId, messageId);
   }
 
-  async remove(id: bigint) {
-    await this.query.deleteMessage(id);
+  async remove(id: bigint, userId: bigint) {
+    const message = await this.query.deleteMessage(id);
+
+    if (!message) throw new InternalServerErrorException('Message not found');
+
+    const roomMembers = await this.chatQuery.getChatMembers(message.chat_id);
+
+    const chatMemberIds = formatChatMembers(roomMembers, userId);
+
+    await this.notificationsService.sendSocketEvent(
+      chatMemberIds,
+      NotificationType.DeleteMessage,
+      { messageId: id.toString(), chatId: message.chat_id.toString() },
+    );
   }
 }

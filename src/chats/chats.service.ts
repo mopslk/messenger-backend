@@ -3,19 +3,23 @@ import {
 } from '@nestjs/common';
 import { CreateChatDto } from '@/chats/dto/create-chat.dto';
 import { UpdateChatDto } from '@/chats/dto/update-chat.dto';
-import { ChatQuery as Query } from '@/queries/utils/chatQuery';
+import { ChatQuery } from '@/queries/utils/chatQuery';
 import { MessageQuery } from '@/queries/utils/messageQuery';
 import { ChatListResponseDto } from '@/chats/dto/chat-list-response.dto';
-import { plainToInstance } from 'class-transformer';
+import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { ChatType, Role, type User } from '@prisma/client';
 import type { ChatMembersCreateInput } from '@/utils/types';
 import { ChatResponseDto } from '@/chats/dto/chat-response.dto';
+import { NotificationType } from '@/notifications/enums/events-enum';
+import { NotificationsService } from '@/notifications/notifications.service';
+import { formatChatMembers } from '@/utils/helpers/formatters';
 
 @Injectable()
 export class ChatsService {
   constructor(
-    private query: Query,
+    private query: ChatQuery,
     private messageQuery: MessageQuery,
+    private notificationsService: NotificationsService,
   ) {}
 
   async create(createChatDto: CreateChatDto, user: User) {
@@ -52,7 +56,19 @@ export class ChatsService {
 
     const createdChat = await this.query.getChat(chat.id);
 
-    return plainToInstance(ChatResponseDto, ChatResponseDto.from(createdChat));
+    const response = plainToInstance(ChatResponseDto, ChatResponseDto.from(createdChat));
+
+    const roomMembers = await this.query.getChatMembers(createdChat.id);
+
+    const chatMemberIds = formatChatMembers(roomMembers, user.id);
+
+    await this.notificationsService.sendSocketEvent(
+      chatMemberIds,
+      NotificationType.NewChat,
+      instanceToPlain(response),
+    );
+
+    return response;
   }
 
   async findAll(userId: bigint): Promise<ChatListResponseDto[]> {
@@ -68,7 +84,7 @@ export class ChatsService {
     return plainToInstance(ChatResponseDto, ChatResponseDto.from(chat));
   }
 
-  async update(id: bigint, updateChatDto: UpdateChatDto) {
+  async update(id: bigint, updateChatDto: UpdateChatDto, userId: bigint) {
     const chat = await this.query.getChat(id);
 
     if (chat.type !== ChatType.group) {
@@ -76,7 +92,20 @@ export class ChatsService {
     }
 
     const updatedChat = await this.query.updateChat(id, updateChatDto);
-    return plainToInstance(ChatResponseDto, ChatResponseDto.from(updatedChat));
+
+    const response = plainToInstance(ChatResponseDto, ChatResponseDto.from(updatedChat));
+
+    const roomMembers = await this.query.getChatMembers(chat.id);
+
+    const chatMemberIds = formatChatMembers(roomMembers, userId);
+
+    await this.notificationsService.sendSocketEvent(
+      chatMemberIds,
+      NotificationType.UpdateChat,
+      instanceToPlain(response),
+    );
+
+    return response;
   }
 
   async remove(chatId: bigint, userId: bigint) {
@@ -87,6 +116,16 @@ export class ChatsService {
     }
 
     await this.query.removeChat(chatId);
+
+    const roomMembers = await this.query.getChatMembers(chatId);
+
+    const chatMemberIds = formatChatMembers(roomMembers, userId);
+
+    await this.notificationsService.sendSocketEvent(
+      chatMemberIds,
+      NotificationType.RemoveChat,
+      { chatId },
+    );
   }
 
   async checkUserAccessToChat(userId: bigint, chatId: bigint) {

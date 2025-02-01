@@ -153,4 +153,12 @@ export class ChatQuery {
       },
     });
   }
+
+  async getChatMembers(chatId: bigint) {
+    return this.prisma.chatMember.findMany({
+      where: {
+        chat_id: chatId,
+      },
+    });
+  }
 }

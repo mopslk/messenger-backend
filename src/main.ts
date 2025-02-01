@@ -4,6 +4,7 @@ import { useContainer } from 'class-validator';
 import { AppModule } from '@/app.module';
 import { TransformInterceptor } from '@/utils/response.interceptor';
 import { AllExceptionsFilter } from '@/utils/exceptions.filter';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,6 +20,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
   }));
+  app.useWebSocketAdapter(new IoAdapter(app));
 
   await app.listen(3000);
 }
