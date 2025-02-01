@@ -111,7 +111,7 @@ export class ChatsService {
   async remove(chatId: bigint, userId: bigint) {
     const userAccess = await this.query.getUserAccessInChat(userId, chatId);
 
-    if (userAccess.role && userAccess.role !== Role.admin) {
+    if (userAccess.role && userAccess.role !== Role.owner) {
       throw new UnauthorizedException();
     }
 
@@ -124,7 +124,7 @@ export class ChatsService {
     await this.notificationsService.sendSocketEvent(
       chatMemberIds,
       NotificationType.RemoveChat,
-      { chatId },
+      { chatId: chatId.toString() },
     );
   }
 
